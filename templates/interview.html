@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Interview Questions</title>
+
+    <style>
+
+        body{
+
+            font-family: Arial;
+            background: #f4f7fc;
+            padding: 40px;
+        }
+
+        .container{
+
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card{
+
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        h1{
+
+            color: #27ae60;
+        }
+
+        pre{
+
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        button{
+
+            margin-top: 20px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #27ae60;
+            color: white;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Interview Questions</h1>
+
+        <h3>Uploaded PDF: {{ filename }}</h3>
+
+        <pre>{{ interview_questions }}</pre>
+
+        <a href="/chat">
+
+            <button>
+
+                Back To Home
+
+            </button>
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

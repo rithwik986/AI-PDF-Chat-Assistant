@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>AI PDF Chat Assistant</title>
+
+    <style>
+
+        body{
+
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container{
+
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card{
+
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        h1{
+
+            color: #4a4aff;
+            text-align: center;
+        }
+
+        h2{
+
+            color: #333;
+        }
+
+        h3{
+
+            color: #555;
+            margin-top: 10px;
+        }
+
+        p{
+
+            text-align: center;
+            color: #555;
+        }
+
+        pre{
+
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        input[type="file"]{
+
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]{
+
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 15px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        button{
+
+            margin-top: 20px;
+            padding: 12px 22px;
+            background: linear-gradient(
+                135deg,
+                #4a4aff,
+                #6c63ff
+            );
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover{
+
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .question{
+
+            border-left: 5px solid #4a4aff;
+        }
+
+        .answer{
+
+            border-left: 5px solid #27ae60;
+        }
+
+        .question h2{
+
+            color: #4a4aff;
+        }
+
+        .answer h2{
+
+            color: #27ae60;
+        }
+
+        .question pre,
+        .answer pre{
+
+            margin-top: 15px;
+        }
+
+        .title-card{
+
+            text-align: center;
+        }
+
+        .chat-container{
+
+            max-height: 650px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .copy-btn{
+
+            background: #27ae60;
+            margin-top: 12px;
+        }
+
+        .copy-btn:hover{
+
+            background: #1f8a4d;
+        }
+
+        #loading{
+
+            display: none;
+            text-align: center;
+            font-size: 18px;
+            color: #4a4aff;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .tools{
+
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tools form{
+
+            flex: 1;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ======================================= -->
+    <!-- TITLE -->
+    <!-- ======================================= -->
+
+    <div class="card title-card">
+
+        <h1>AI PDF Chat Assistant</h1>
+
+        <p>
+
+            Upload a PDF and chat with it using AI.
+
+        </p>
+
+        {% if filename %}
+
+        <h3>
+
+            Uploaded PDF: {{ filename }}
+
+        </h3>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PDF + INITIAL PROMPT -->
+    <!-- ======================================= -->
+
+    <div class="card">
+
+        <h2>Upload PDF & Ask AI</h2>
+
+        <form action="/analyze"
+              method="POST"
+              enctype="multipart/form-data"
+              id="uploadForm">
+
+            <!-- PDF FILE -->
+
+            <input type="file"
+                   name="pdf_file"
+                   required>
+
+            <!-- USER PROMPT -->
+
+            <input type="text"
+                   name="user_prompt"
+                   placeholder="Example: Summarize this PDF in simple language"
+                   required>
+
+            <!-- BUTTON -->
+
+            <button type="submit">
+
+                Ask AI
+
+            </button>
+
+        </form>
+
+        <!-- LOADING -->
+
+        <div id="loading">
+
+            Processing PDF... Please wait.
+
+        </div>
+
+    </div>
+
+    <!-- ======================================= -->
+    <!-- CHAT HISTORY -->
+    <!-- ======================================= -->
+
+    {% if chat_history %}
+
+    <div class="chat-container">
+
+        {% for chat in chat_history %}
+
+        <!-- USER QUESTION -->
+
+        <div class="card question">
+
+            <h2>Your Prompt</h2>
+
+            <pre>{{ chat.question }}</pre>
+
+        </div>
+
+        <!-- AI ANSWER -->
+
+        <div class="card answer">
+
+            <h2>AI Response</h2>
+
+            <pre class="copy-text">{{ chat.answer }}</pre>
+
+            <button class="copy-btn"
+                    onclick="copyText(this)">
+
+                Copy
+
+            </button>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+    <!-- ======================================= -->
+    <!-- FOLLOW-UP QUESTIONS -->
+    <!-- ======================================= -->
+
+    {% if chat_history %}
+
+    <div class="card">
+
+        <h2>Ask Follow-up Questions</h2>
+
+        <form action="/ask"
+              method="POST"
+              id="questionForm">
+
+            <input type="text"
+                   name="question"
+                   placeholder="Ask follow-up question..."
+                   required>
+
+            <button type="submit">
+
+                Ask AI
+
+            </button>
+
+        </form>
+
+    </div>
+
+    {% endif %}
+
+    <!-- ======================================= -->
+    <!-- AI LEARNING TOOLS -->
+    <!-- ======================================= -->
+
+    {% if chat_history %}
+
+    <div class="card">
+
+        <h2>AI Learning Tools</h2>
+
+        <div class="tools">
+
+            <!-- ACADEMIC QUIZ -->
+
+            <form action="/academic_quiz"
+                  method="POST">
+
+                <button type="submit">
+
+                    Generate Academic Quiz
+
+                </button>
+
+            </form>
+
+            <!-- INTERVIEW QUESTIONS -->
+
+            <form action="/interview_questions"
+                  method="POST">
+
+                <button type="submit">
+
+                    Generate Interview Questions
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- ======================================= -->
+<!-- JAVASCRIPT -->
+<!-- ======================================= -->
+
+<script>
+
+document.getElementById("uploadForm")
+.addEventListener("submit", function(){
+
+    document.getElementById("loading")
+    .style.display = "block";
+});
+
+function copyText(button){
+
+    const text =
+    button.previousElementSibling.innerText;
+
+    navigator.clipboard.writeText(text);
+
+    button.innerText = "Copied!";
+
+    setTimeout(() => {
+
+        button.innerText = "Copy";
+
+    }, 2000);
+}
+
+</script>
+
+</body>
+
+</html>

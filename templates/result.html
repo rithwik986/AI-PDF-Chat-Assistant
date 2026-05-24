@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Research Assistant</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 40px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.08);
+        }
+
+        input[type="file"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .question-box {
+            border-left: 5px solid #2563eb;
+        }
+
+        .answer-box {
+            border-left: 5px solid #16a34a;
+        }
+
+        .response-content {
+            line-height: 1.8;
+            font-size: 17px;
+            color: #222;
+            white-space: pre-wrap;
+        }
+
+        /* ===================================== */
+        /* CHAT SCROLL AREA */
+        /* ===================================== */
+
+        .chat-container {
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* ===================================== */
+        /* LOADING SPINNER */
+        /* ===================================== */
+
+        #loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2563eb;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 1s linear infinite;
+            margin-top: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===================================== */
+        /* COPY BUTTON */
+        /* ===================================== */
+
+        .copy-btn {
+            background: #16a34a;
+            margin-top: 15px;
+        }
+
+        .copy-btn:hover {
+            background: #15803d;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>AI Research Assistant</h1>
+
+        <!-- ===================================== -->
+        <!-- PDF UPLOAD -->
+        <!-- ===================================== -->
+
+        <div class="card">
+
+            <h2>Upload PDF</h2>
+
+            <form id="uploadForm"
+                  action="/analyze"
+                  method="POST"
+                  enctype="multipart/form-data">
+
+                <label>Select PDF</label>
+
+                <input type="file"
+                       name="pdf_file"
+                       accept=".pdf"
+                       required>
+
+                <label>Enter Prompt</label>
+
+                <textarea
+                    name="user_prompt"
+                    rows="5"
+                    placeholder="Example: Summarize this PDF..."
+                    required></textarea>
+
+                <button type="submit">
+                    Analyze PDF
+                </button>
+
+            </form>
+
+            <!-- LOADING -->
+
+            <div id="loading">
+
+                Processing PDF... Please wait.
+
+                <div class="spinner"></div>
+
+            </div>
+
+        </div>
+
+        <!-- ===================================== -->
+        <!-- CHAT HISTORY -->
+        <!-- ===================================== -->
+
+        <div class="chat-container">
+
+            {% for chat in chat_history %}
+
+                <!-- USER QUESTION -->
+
+                <div class="card question-box">
+
+                    <h2>User Question</h2>
+
+                    <div class="response-content">
+
+                        {{ chat.question }}
+
+                    </div>
+
+                </div>
+
+                <!-- AI RESPONSE -->
+
+                <div class="card answer-box">
+
+                    <h2>AI Response</h2>
+
+                    <div class="response-content"
+                         id="response{{ loop.index }}">
+
+                        {{ chat.answer }}
+
+                    </div>
+
+                    <!-- COPY BUTTON -->
+
+                    <button class="copy-btn"
+                            onclick="copyText('response{{ loop.index }}')">
+
+                        Copy Response
+
+                    </button>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- ===================================== -->
+        <!-- FOLLOW-UP QUESTIONS -->
+        <!-- ===================================== -->
+
+        {% if chat_history %}
+
+        <div class="card">
+
+            <h2>Ask Follow-up Questions</h2>
+
+            <form action="/ask" method="POST">
+
+                <input type="text"
+                       name="question"
+                       placeholder="Ask another question..."
+                       required>
+
+                <button type="submit">
+                    Ask Question
+                </button>
+
+            </form>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ===================================== -->
+    <!-- JAVASCRIPT -->
+    <!-- ===================================== -->
+
+    <script>
+
+        // =====================================
+        // LOADING SPINNER
+        // =====================================
+
+        document.getElementById("uploadForm")
+        .addEventListener("submit", function () {
+
+            document.getElementById("loading")
+            .style.display = "block";
+        });
+
+        // =====================================
+        // COPY RESPONSE
+        // =====================================
+
+        function copyText(id) {
+
+            const text = document.getElementById(id).innerText;
+
+            navigator.clipboard.writeText(text);
+
+            alert("Response copied!");
+        }
+
+    </script>
+
+</body>
+
+</html>
